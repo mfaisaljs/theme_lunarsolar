@@ -1,0 +1,63 @@
+<!-- Banner Started -->
+<div class="home-hero-banner" style="background-image:url('{{ section.settings.image | img_url:'master' }}');">
+  {% if section.settings.image != blank %}
+ <!-- <img src='{{ section.settings.image | img_url:'master' }}'> -->
+  <div class="hero-content">
+    <h1>{{ section.settings.heading_1 }} <i>{{ section.settings.heading_2 }}</i></h1>
+    <p>{{ section.settings.sub_heading }}</p>
+    <span>{{ section.settings.peragraph }}
+    </span>
+    <a href="{{ section.settings.btn_url }}" class="button">
+      {{ section.settings.btn }}
+    </a>
+  </div>
+  {% endif %}
+</div>
+
+
+<!-- Banner End -->
+
+{% schema %}
+{
+  "name": "Test Project banner",
+  "settings": [
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "Upload Your image"
+    },
+	{
+	"type":"text",
+	"id":"heading_1",
+	"label":"Heading 1st Line"
+},
+{
+	"type":"text",
+	"id":"heading_2",
+	"label":"Heading 2st Line"
+},
+{
+	"type":"text",
+	"id":"sub_heading",
+	"label":"sub heading"
+},
+{
+	"type":"text",
+	"id":"peragraph",
+	"label":"Peragraph"
+},
+{
+	"type":"text",
+	"id":"btn",
+	"label":"Button Text"
+},
+{
+	"type":"url",
+	"id":"btn_url",
+	"label":"Button URL"
+}
+   
+  ]
+  
+}
+{% endschema %}

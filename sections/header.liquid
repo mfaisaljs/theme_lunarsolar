@@ -1,0 +1,237 @@
+<link rel="stylesheet" href="{{ 'component-list-menu.css' | asset_url }}" media="print" onload="this.media='all'">
+<link rel="stylesheet" href="{{ 'component-search.css' | asset_url }}" media="print" onload="this.media='all'">
+<link rel="stylesheet" href="{{ 'component-menu-drawer.css' | asset_url }}" media="print" onload="this.media='all'">
+<link rel="stylesheet" href="{{ 'component-cart-notification.css' | asset_url }}" media="print" onload="this.media='all'">
+<link rel="stylesheet" href="{{ 'component-cart-items.css' | asset_url }}" media="print" onload="this.media='all'">
+{%- if settings.predictive_search_enabled -%}
+  <link rel="stylesheet" href="{{ 'component-price.css' | asset_url }}" media="print" onload="this.media='all'">
+  <link rel="stylesheet" href="{{ 'component-loading-overlay.css' | asset_url }}" media="print" onload="this.media='all'">
+{%- endif -%}
+
+<noscript>{{ 'component-list-menu.css' | asset_url | stylesheet_tag }}</noscript>
+<noscript>{{ 'component-search.css' | asset_url | stylesheet_tag }}</noscript>
+<noscript>{{ 'component-menu-drawer.css' | asset_url | stylesheet_tag }}</noscript>
+<noscript>{{ 'component-cart-notification.css' | asset_url | stylesheet_tag }}</noscript>
+<noscript>{{ 'component-cart-items.css' | asset_url | stylesheet_tag }}</noscript>
+<script src="{{ 'details-disclosure.js' | asset_url }}" defer="defer"></script>
+<script src="{{ 'details-modal.js' | asset_url }}" defer="defer"></script>
+<script src="{{ 'cart-notification.js' | asset_url }}" defer="defer"></script>
+
+<!-- header started -->
+<div class="header">
+   <div class="header-contents">
+      <div class="main-nav">
+         {% if section.settings.menu_icon %}
+         <div class="nav-icon">
+            <img src="{{ section.settings.menu_icon | img_url:'master' }}">
+         </div>
+         {% endif %}
+         <div class="nav-content">
+            {% if section.settings.menu_icon_close %}
+            <img class="nav-close" src="{{ section.settings.menu_icon_close | img_url:'master' }}">
+            {% endif %}
+            <div class="nav-container">
+               <div class="nav-product-menu">
+                  {%- for link in section.settings.menu_product.links %}
+                  <ul>
+                     {%- for product in link.object.products -%}
+                     <li>
+                        <div class="nav-product-item">
+                           <div  class="nav-product-photo">
+                              <img src="{{  product.featured_image | product_img_url: '100x100' }}"/>
+                           </div>
+                           <div class="nav-product-link">
+                              <h1>
+                                 <a href="{{ product.url }}" }>
+                                 {{ product.title }}
+                                 </a> 
+                              </h1>
+                           </div>
+                        </div>
+                     </li>
+                     {%- endfor -%}
+                     {%- endfor -%}
+                  </ul>
+               </div>
+               <nav class="main-nav">
+                  <ul>
+                     {%- for link in section.settings.menu.links -%}
+                     <li>
+                        <a href="{{ link.url }}" {% if link.active %}aria-current="page"{% endif %}>
+                        {{ link.title }}
+                        </a>
+                     </li>
+                     {%- endfor -%}
+                  </ul>
+               </nav>
+            </div>
+         </div>
+      </div>
+      {% if section.settings.logo %}
+      <div class="logo">
+         <a href="/"><img src="{{ section.settings.logo | img_url:'master' }}"></a>
+      </div>
+      {% endif %}
+      <div class="cart">
+         <div class="customer-account">
+            {% if shop.customer_accounts_enabled %}
+            {% if customer %}
+            <a href="{{ routes.account_url }}">My Account</a>
+            {% else %}
+            <a href="{{ routes.account_login_url }}">Log In</a>
+            {% endif %}
+            {% endif %}
+         </div>
+         {% if section.settings.cart_icon %}
+         <div class="cart-icon header__icon header__icon--cart link focus-inset" id="cart-icon-bubble" >
+            <img src="{{ section.settings.cart_icon | img_url:'master' }}">
+         </div>
+         {% endif %}
+      </div>
+   </div>
+</div>
+<!-- Header end -->
+
+
+{% javascript %}
+  class StickyHeader extends HTMLElement {
+    constructor() {
+      super();
+    }
+
+    connectedCallback() {
+      this.header = document.getElementById('shopify-section-header');
+      this.headerBounds = {};
+      this.currentScrollTop = 0;
+      this.preventReveal = false;
+      this.predictiveSearch = this.querySelector('predictive-search');
+
+      this.onScrollHandler = this.onScroll.bind(this);
+      this.hideHeaderOnScrollUp = () => this.preventReveal = true;
+
+      this.addEventListener('preventHeaderReveal', this.hideHeaderOnScrollUp);
+      window.addEventListener('scroll', this.onScrollHandler, false);
+
+      this.createObserver();
+    }
+
+    disconnectedCallback() {
+      this.removeEventListener('preventHeaderReveal', this.hideHeaderOnScrollUp);
+      window.removeEventListener('scroll', this.onScrollHandler);
+    }
+
+    createObserver() {
+      let observer = new IntersectionObserver((entries, observer) => {
+        this.headerBounds = entries[0].intersectionRect;
+        observer.disconnect();
+      });
+
+      observer.observe(this.header);
+    }
+
+    onScroll() {
+      const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+
+      if (this.predictiveSearch && this.predictiveSearch.isOpen) return;
+
+      if (scrollTop > this.currentScrollTop && scrollTop > this.headerBounds.bottom) {
+        requestAnimationFrame(this.hide.bind(this));
+      } else if (scrollTop < this.currentScrollTop && scrollTop > this.headerBounds.bottom) {
+        if (!this.preventReveal) {
+          requestAnimationFrame(this.reveal.bind(this));
+        } else {
+          window.clearTimeout(this.isScrolling);
+
+          this.isScrolling = setTimeout(() => {
+            this.preventReveal = false;
+          }, 66);
+
+          requestAnimationFrame(this.hide.bind(this));
+        }
+      } else if (scrollTop <= this.headerBounds.top) {
+        requestAnimationFrame(this.reset.bind(this));
+      }
+
+
+      this.currentScrollTop = scrollTop;
+    }
+
+    hide() {
+      this.header.classList.add('shopify-section-header-hidden', 'shopify-section-header-sticky');
+      this.closeMenuDisclosure();
+      this.closeSearchModal();
+    }
+
+    reveal() {
+      this.header.classList.add('shopify-section-header-sticky', 'animate');
+      this.header.classList.remove('shopify-section-header-hidden');
+    }
+
+    reset() {
+      this.header.classList.remove('shopify-section-header-hidden', 'shopify-section-header-sticky', 'animate');
+    }
+
+    closeMenuDisclosure() {
+      this.disclosures = this.disclosures || this.header.querySelectorAll('details-disclosure');
+      this.disclosures.forEach(disclosure => disclosure.close());
+    }
+
+    closeSearchModal() {
+      this.searchModal = this.searchModal || this.header.querySelector('details-modal');
+      this.searchModal.close(false);
+    }
+  }
+
+  customElements.define('sticky-header', StickyHeader);
+
+
+{% endjavascript %}
+
+{% schema %}
+{
+  "name": "header",
+  "class": "section-header",
+  "settings": [
+	{
+"type":"header",
+"content":"Header"
+},
+{
+"type":"image_picker",
+"id":"logo",
+"label":"Upload your logo"
+},
+{
+"type":"textarea",
+"id":"heading-menu",
+"label":"Type heading for Menu"
+},
+{
+"type":"link_list",
+"id":"menu_product",
+"label":"Select Your main menu"
+},
+{
+"type":"link_list",
+"id":"menu",
+"label":"Select Your main menu"
+},
+{
+"type":"image_picker",
+"id":"menu_icon",
+"label":"Upload your menu icon"
+},
+{
+"type":"image_picker",
+"id":"menu_icon_close",
+"label":"Upload your Menu Clos icon"
+},
+{
+"type":"image_picker",
+"id":"cart_icon",
+"label":"Upload your Cart Icon"
+}
+  
+    ]
+}
+{% endschema %}

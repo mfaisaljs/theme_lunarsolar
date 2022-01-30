@@ -1,0 +1,66 @@
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/shopify-cartjs/0.4.3/cart.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/shopify-cartjs/0.4.3/rivets-cart.min.js"></script>
+
+<div class="cart-drawer" data-cart-view="data-cart-view">
+    <div class="cartdrawer-head">
+        <div class="logo">
+            <img src="https://cdn.shopify.com/s/files/1/1322/4343/files/menu.png?v=1643465911" />
+        </div>
+    </div>
+    <p id="cd-close">
+        <img src="https://cdn.shopify.com/s/files/1/1322/4343/files/arrow_cb44c466-5f9c-4e87-9ee2-640ff5fc9bab.png?v=1643465984" />
+    </p>
+  
+    <div class="cartdrawer-body">
+      <div rv-show="cart.item_count | gt 0">
+        <div class="cartdrawer-item" rv-each-item="cart.items">
+            <div class="item-left">
+                <img rv-src="item.image | product_image_size '80x80' " />
+            </div>
+            <div class="item-right">
+                <span class="title" rv-text="item.product_title"></span>
+                <p class="variant_t" rv-text="item.variant_title"></p>
+                ,
+                $<span rv-html="item.price | money Currency.currentCurrency"></span>
+
+                <p class="update-quantity-drawer">
+                    <a class="updatePlus" href="#" rv-data-cart-update="index | plus 1" rv-data-cart-quantity="item.quantity | minus 1">-</a>
+                    <span rv-text="item.quantity"></span>
+                    <a class="updateMinus" href="#" rv-data-cart-update="index | plus 1" rv-data-cart-quantity="item.quantity | plus 1">+</a>
+                </p>
+            </div>
+            <p class="cd-remove">
+                <a href="#" rv-data-cart-remove="index | plus 1"><img src="https://cdn.shopify.com/s/files/1/1322/4343/files/Group_22.png?v=1643466759" /></a>
+            </p>
+        </div>
+
+        <div class="sub-to">
+            <div class="s-title">
+                <p>SUBTOTAL</p>
+            </div>
+            <div class="cart-total-price" rv-show="cart.item_count | gt 0">$<span class="totalcartprice" rv-html="cart.total_price | money Currency.currentCurrency"></span></div>
+        </div>
+      </div>
+      
+      <div rv-show="cart.item_count | lt 1">
+        	<div class="emptycart">
+              <p>Your cart is thirsty.</p>
+        </div>
+      </div>
+    </div>
+  
+  
+   <div rv-show="cart.item_count | gt 0">
+    <div class="cartdrawer-footer">
+        <a href="/checkout" class="btn cart-drawer-checkout large-btn">Checkout</a>
+        <a href="/" class="cd-close btn coutinuec-shopping large-btn">Keep Shopping</a>
+     </div>
+    </div>
+  <div rv-show="cart.item_count | lt 1">
+   <div class="cartdrawer-footer">
+     
+        <a href="/collections/all" class="btn coutinuec-shopping item-zero">Keep Shopping</a>
+
+    </div>
+  </div>
+</div>
